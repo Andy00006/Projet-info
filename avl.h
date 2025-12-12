@@ -1,62 +1,34 @@
+#ifndef AVL_H
+#define AVL_H
+
 #include <stdio.h>
-#include <stdlib.h>
 
-typedef struct  abr{
-	char* valeur;
-	abr* fg;
-	abr* fd;
-	int eq;
-}ABR;
+/* AVL simple clé -> pointeur de donnée (void*). */
+typedef struct NoeudAVL {
+    char *cle;               /* clé (identifiant) */
+    void *val;               /* pointeur vers donnée (factory_t ou node_t) */
+    struct NoeudAVL *gauche;
+    struct NoeudAVL *droite;
+    int hauteur;
+} NoeudAVL;
 
-typedef ABR* abr;
+typedef struct {
+    NoeudAVL *racine;
+} AVL;
 
-abr creeabr(char* v);
-	abr new;
-	new=malloc(sizeof(ABR));
-	if new==NULL{
-		exit(1);
-	}
-	new->valeur=v;
-	new->fg=NULL;
-	new->fd=NULL;
-	new->eq=0;
-}
-abr insertion(abr liste,abr a){
-		
+/* création/libération */
+AVL *avl_creer(void);
+void avl_liberer(AVL *a, void (*liberer_val)(void*));
 
+/* recherche: retourne val si trouvée, NULL sinon */
+void *avl_trouver(AVL *a, const char *cle);
 
+/* insertion si absente: insère val et retourne val.
+   Si cle existe déjà, retourne la val existante et n'insère pas.
+*/
+void *avl_inserer_si_absent(AVL *a, const char *cle, void *val);
 
+/* parcours reverse alphabetical (descendant) : appelle fn(val, cle, ctx) */
+void avl_parcours_desc(AVL *a, void (*fn)(void *val, const char *cle, void *ctx), void *ctx);
 
-
-
-
-
-
-abr rotationGauche(abr a){
-    abr pivot = a->fd; 
-    int eq_a = a->eq, eq_p = pivot->eq;
-	a->fd = pivot->fg; 
-    pivot->fg = a;     
-    a->eq = eq_a - max(eq_p, 0) - 1;
-    pivot->eq = min3(eq_a - 2, eq_a + eq_p - 2, eq_p - 1);
-    return pivot; 
-}
-abr rotationDroite(abr a){
-    abr pivot = a->fg; 
-    int eq_a = a->eq, eq_p = pivot->eq;
-    a->fg = pivot->fd; 
-    pivot->fd = a;    
-    a->eq = eq_a - min(eq_p, 0) + 1;
-    pivot->eq = max3(eq_a + 2, eq_a + eq_p + 2, eq_p + 1);
-    return pivot;
-}
-
-abr doubleRotationGauche(abr a){
-    a->fd = rotationDroite(a->fd);
-    return rotationGauche(a);
-}
-
-abr doubleRotationDroite(abr a){
-    a->fg = rotationGauche(a->fg);
-    return rotationDroite(a);
-}
+#endif

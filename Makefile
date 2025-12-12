@@ -1,34 +1,29 @@
-#ifndef AVL_H
-#define AVL_H
+CC = gcc
+CFLAGS = -Wall -Wextra -O2 -g -std=c11
+SRCDIR = .
+OBJDIR = build/obj
+BINDIR = build
+TARGET = $(BINDIR)/eau_analyse
 
-#include <stdio.h>
+# Définition explicite des sources dans le répertoire courant
+SOURCES = avl.c data.c main.c
+OBJS = $(patsubst %.c,$(OBJDIR)/%.o,$(SOURCES))
 
-/* AVL simple clé -> pointeur de donnée (void*). */
-typedef struct NoeudAVL {
-    char *cle;               /* clé (identifiant) */
-    void *val;               /* pointeur vers donnée (factory_t ou node_t) */
-    struct NoeudAVL *gauche;
-    struct NoeudAVL *droite;
-    int hauteur;
-} NoeudAVL;
+.PHONY: all clean
 
-typedef struct {
-    NoeudAVL *racine;
-} AVL;
+all: $(TARGET)
 
-/* création/libération */
-AVL *avl_creer(void);
-void avl_liberer(AVL *a, void (*liberer_val)(void*));
+$(OBJDIR)/%.o: %.c | $(OBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $@
 
-/* recherche: retourne val si trouvée, NULL sinon */
-void *avl_trouver(AVL *a, const char *cle);
+$(TARGET): $(OBJS) | $(BINDIR)
+	$(CC) $(CFLAGS) $(OBJS) -o $@
 
-/* insertion si absente: insère val et retourne val.
-   Si cle existe déjà, retourne la val existante et n'insère pas.
-*/
-void *avl_inserer_si_absent(AVL *a, const char *cle, void *val);
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
 
-/* parcours reverse alphabetical (descendant) : appelle fn(val, cle, ctx) */
-void avl_parcours_desc(AVL *a, void (*fn)(void *val, const char *cle, void *ctx), void *ctx);
+$(BINDIR):
+	mkdir -p $(BINDIR)
 
-#endif
+clean:
+	rm -rf $(OBJDIR) $(BINDIR) vol_*.dat vol_*.png plot_*.plt leaks_history.dat

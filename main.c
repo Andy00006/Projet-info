@@ -5,12 +5,6 @@
 #include "avl.h"
 #include "data.h"
 
-/* Programme unique pour histo et leaks:
-   usage:
-   ./eau_analyse histo <csv> <max|src|real>
-   ./eau_analyse leaks <csv> "<FactoryID>"
-*/
-
 int main(int argc, char **argv) {
     if (argc < 2) {
         fprintf(stderr,
@@ -21,9 +15,6 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    /* ----------------------------------------- */
-    /* MODE HISTOGRAMME                          */
-    /* ----------------------------------------- */
     if (strcmp(argv[1], "histo") == 0) {
         if (argc != 4) {
             fprintf(stderr, "histo requiert: <csv> <max|src|real>\n");
@@ -62,9 +53,6 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    /* ----------------------------------------- */
-    /* MODE LEAKS                                */
-    /* ----------------------------------------- */
     else if (strcmp(argv[1], "leaks") == 0) {
         if (argc != 4) {
             fprintf(stderr, "leaks requiert: <csv> \"FactoryID\"\n");
@@ -98,9 +86,6 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    /* ----------------------------------------- */
-    /* COMMANDE INCONNUE                         */
-    /* ----------------------------------------- */
     else {
         fprintf(stderr, "Commande inconnue : %s\n", argv[1]);
         return 7;

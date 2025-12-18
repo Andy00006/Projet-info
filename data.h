@@ -1,4 +1,4 @@
-#ifndef DATA_H
+les uatres fonctions y'a pas de mof#ifndef DATA_H
 #define DATA_H
 
 #include "avl.h"

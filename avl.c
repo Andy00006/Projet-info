@@ -4,16 +4,6 @@
 #include <string.h>
 #include "avl.h"
 
-/* strdup simple */
-static char *xstrdup(const char *s) {
-    if (!s) return NULL;
-    size_t n = strlen(s);
-    char *r = malloc(n + 1);
-    if (!r) return NULL;
-    memcpy(r, s, n + 1);
-    return r;
-}
-
 static int hauteur(NoeudAVL *n) { return n ? n->hauteur : 0; }
 static int max(int a, int b) { return a > b ? a : b; }
 
@@ -37,54 +27,39 @@ static NoeudAVL *rotate_left(NoeudAVL *x) {
     return y;
 }
 
-static NoeudAVL *node_new(const char *cle, void *val) {
-    NoeudAVL *n = calloc(1, sizeof(NoeudAVL));
-    if (!n) return NULL;
-    n->cle = xstrdup(cle);
-    n->val = val;
-    n->hauteur = 1;
-    return n;
-}
-
 static NoeudAVL *insert_node(NoeudAVL *node, const char *cle, void *val, void **existing) {
     if (!node) {
+        NoeudAVL *n = calloc(1, sizeof(NoeudAVL));
+        if (!n) return NULL;
+        n->cle = strdup(cle);
+        n->val = val;
+        n->hauteur = 1;
         if (existing) *existing = NULL;
-        return node_new(cle, val);
+        return n;
     }
     int cmp = strcmp(cle, node->cle);
-    if (cmp < 0)
-        node->gauche = insert_node(node->gauche, cle, val, existing);
-    else if (cmp > 0)
-        node->droite = insert_node(node->droite, cle, val, existing);
+    if (cmp < 0) node->gauche = insert_node(node->gauche, cle, val, existing);
+    else if (cmp > 0) node->droite = insert_node(node->droite, cle, val, existing);
     else {
         if (existing) *existing = node->val;
         return node;
     }
-
     node->hauteur = 1 + max(hauteur(node->gauche), hauteur(node->droite));
-    int balance = hauteur(node->gauche) - hauteur(node->droite);
-
-    if (balance > 1 && strcmp(cle, node->gauche->cle) < 0)
-        return rotate_right(node);
-    if (balance < -1 && strcmp(cle, node->droite->cle) > 0)
-        return rotate_left(node);
-    if (balance > 1 && strcmp(cle, node->gauche->cle) > 0) {
+    int b = hauteur(node->gauche) - hauteur(node->droite);
+    if (b > 1 && strcmp(cle, node->gauche->cle) < 0) return rotate_right(node);
+    if (b < -1 && strcmp(cle, node->droite->cle) > 0) return rotate_left(node);
+    if (b > 1 && strcmp(cle, node->gauche->cle) > 0) {
         node->gauche = rotate_left(node->gauche);
         return rotate_right(node);
     }
-    if (balance < -1 && strcmp(cle, node->droite->cle) < 0) {
+    if (b < -1 && strcmp(cle, node->droite->cle) < 0) {
         node->droite = rotate_right(node->droite);
         return rotate_left(node);
     }
     return node;
 }
 
-AVL *avl_creer(void) {
-    AVL *a = malloc(sizeof(AVL));
-    if (!a) return NULL;
-    a->racine = NULL;
-    return a;
-}
+AVL *avl_creer(void) { return calloc(1, sizeof(AVL)); }
 
 void avl_liberer_nodes(NoeudAVL *n, void (*liberer_val)(void*)) {
     if (!n) return;
@@ -95,43 +70,37 @@ void avl_liberer_nodes(NoeudAVL *n, void (*liberer_val)(void*)) {
     free(n);
 }
 
-void avl_liberer(AVL *a, void (*liberer_val)(void*)) {
+void avl_liberer(AVL *a, void (*lib_v)(void*)) {
     if (!a) return;
-    avl_liberer_nodes(a->racine, liberer_val);
+    avl_liberer_nodes(a->racine, lib_v);
     free(a);
 }
 
 void *avl_trouver(AVL *a, const char *cle) {
-    NoeudAVL *cur = a->racine;
-    while (cur) {
-        int cmp = strcmp(cle, cur->cle);
-        if (cmp == 0) return cur->val;
-        cur = (cmp < 0) ? cur->gauche : cur->droite;
+    NoeudAVL *curr = a->racine;
+    while (curr) {
+        int cmp = strcmp(cle, curr->cle);
+        if (cmp == 0) return curr->val;
+        curr = (cmp < 0) ? curr->gauche : curr->droite;
     }
     return NULL;
 }
 
 void *avl_inserer_si_absent(AVL *a, const char *cle, void *val) {
-    if (!a || !cle) return NULL;
-    void *existing = NULL;
-    a->racine = insert_node(a->racine, cle, val, &existing);
-    if (existing) {
-        /* libérer val passé par l'appelant si non utilisé */
-        return existing;
-    } else {
-        return val;
-    }
+    void *ex = NULL;
+    a->racine = insert_node(a->racine, cle, val, &ex);
+    return ex ? ex : val;
 }
 
-/* parcours inverse (descendant alphabétique) */
 static void parcours_rev(NoeudAVL *n, void (*fn)(void*, const char*, void*), void *ctx) {
     if (!n) return;
-    parcours_rev(n->droite, fn, ctx);
+    parcours_rev(n->droite, fn, ctx); // Droite d'abord pour l'ordre inverse
     fn(n->val, n->cle, ctx);
     parcours_rev(n->gauche, fn, ctx);
 }
 
-void avl_parcours_desc(AVL *a, void (*fn)(void *val, const char *cle, void *ctx), void *ctx) {
-    if (!a || !fn) return;
+void avl_parcours_desc(AVL *a, void (*fn)(void*, const char*, void*), void *ctx) {
+    if (a) parcours_rev(a->racine, fn, ctx);
+}
     parcours_rev(a->racine, fn, ctx);
 }

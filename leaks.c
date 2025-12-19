@@ -29,11 +29,8 @@ double sommerPertesAval(Noeud* racine, int id_actuel, double debit_entrant) {
             pertes_sous_reseau += sommerPertesAval(racine, n->id_enfant_gauche, debit_par_enfant);
         }
         if (n->id_enfant_droit != -1) {
-            pertes_sous_reseau += sommerPertesAval(racine, n->id_enfant_droit, debit_par_enfant);
-        }
-    }
-    return perte_locale + pertes_sous_reseau;
-}
+            pertes_sous_reseau += sommerPertesAval(racine, n->id_enfant_droit, debit_par_enfant);}}
+    return perte_locale + pertes_sous_reseau;}
 int main() {
     extern Noeud* racine; 
     int id_usine;

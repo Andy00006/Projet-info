@@ -1,106 +1,104 @@
-#define _GNU_SOURCE
-#include <stdio.h>
+#include "avl.h"
 #include <stdlib.h>
 #include <string.h>
-#include "avl.h"
 
-static int hauteur(NoeudAVL *n) { return n ? n->hauteur : 0; }
-static int max(int a, int b) { return a > b ? a : b; }
+// Fonctions utilitaires pour l'équilibre
+int obtenir_hauteur(Noeud* n) { return n ? n->hauteur : 0; }
+int calculer_equilibre(Noeud* n) { return n ? obtenir_hauteur(n->gauche) - obtenir_hauteur(n->droit) : 0; }
+int maximum(int a, int b) { return (a > b) ? a : b; }
 
-static NoeudAVL *rotate_right(NoeudAVL *y) {
-    NoeudAVL *x = y->gauche;
-    NoeudAVL *T2 = x->droite;
-    x->droite = y;
+// Création d'un nouveau nœud usine
+Noeud* creer_noeud(char* id, double capa, double capt, double trait) {
+    Noeud* n = malloc(sizeof(Noeud));
+    if (!n) exit(1); // Erreur d'allocation
+    strncpy(n->identifiant, id, 99);
+    n->capacite_max = capa;
+    n->volume_capte = capt;
+    n->volume_traite = trait;
+    n->hauteur = 1;
+    n->gauche = n->droit = NULL;
+    return n;
+}
+
+// Rotation vers la droite
+Noeud* rotation_droite(Noeud* y) {
+    Noeud* x = y->gauche;
+    Noeud* T2 = x->droit;
+    x->droit = y;
     y->gauche = T2;
-    y->hauteur = max(hauteur(y->gauche), hauteur(y->droite)) + 1;
-    x->hauteur = max(hauteur(x->gauche), hauteur(x->droite)) + 1;
+    y->hauteur = maximum(obtenir_hauteur(y->gauche), obtenir_hauteur(y->droit)) + 1;
+    x->hauteur = maximum(obtenir_hauteur(x->gauche), obtenir_hauteur(x->droit)) + 1;
     return x;
 }
 
-static NoeudAVL *rotate_left(NoeudAVL *x) {
-    NoeudAVL *y = x->droite;
-    NoeudAVL *T2 = y->gauche;
+// Rotation vers la gauche
+Noeud* rotation_gauche(Noeud* x) {
+    Noeud* y = x->droit;
+    Noeud* T2 = y->gauche;
     y->gauche = x;
-    x->droite = T2;
-    x->hauteur = max(hauteur(x->gauche), hauteur(x->droite)) + 1;
-    y->hauteur = max(hauteur(y->gauche), hauteur(y->droite)) + 1;
+    x->droit = T2;
+    x->hauteur = maximum(obtenir_hauteur(x->gauche), obtenir_hauteur(x->droit)) + 1;
+    y->hauteur = maximum(obtenir_hauteur(y->gauche), obtenir_hauteur(y->droit)) + 1;
     return y;
 }
 
-static NoeudAVL *insert_node(NoeudAVL *node, const char *cle, void *val, void **existing) {
-    if (!node) {
-        NoeudAVL *n = calloc(1, sizeof(NoeudAVL));
-        if (!n) return NULL;
-        n->cle = strdup(cle);
-        n->val = val;
-        n->hauteur = 1;
-        if (existing) *existing = NULL;
-        return n;
-    }
-    int cmp = strcmp(cle, node->cle);
-    if (cmp < 0) node->gauche = insert_node(node->gauche, cle, val, existing);
-    else if (cmp > 0) node->droite = insert_node(node->droite, cle, val, existing);
+// Insertion avec équilibrage AVL
+Noeud* inserer(Noeud* noeud, char* id, double capa, double capt, double trait) {
+    if (!noeud) return creer_noeud(id, capa, capt, trait);
+
+    int comparaison = strcmp(id, noeud->identifiant);
+    if (comparaison < 0) 
+        noeud->gauche = inserer(noeud->gauche, id, capa, capt, trait);
+    else if (comparaison > 0) 
+        noeud->droit = inserer(noeud->droit, id, capa, capt, trait);
     else {
-        if (existing) *existing = node->val;
-        return node;
+        // L'usine existe déjà, on cumule les valeurs
+        noeud->capacite_max += capa;
+        noeud->volume_capte += capt;
+        noeud->volume_traite += trait;
+        return noeud;
     }
-    node->hauteur = 1 + max(hauteur(node->gauche), hauteur(node->droite));
-    int b = hauteur(node->gauche) - hauteur(node->droite);
-    if (b > 1 && strcmp(cle, node->gauche->cle) < 0) return rotate_right(node);
-    if (b < -1 && strcmp(cle, node->droite->cle) > 0) return rotate_left(node);
-    if (b > 1 && strcmp(cle, node->gauche->cle) > 0) {
-        node->gauche = rotate_left(node->gauche);
-        return rotate_right(node);
+
+    // Mise à jour de la hauteur et équilibrage
+    noeud->hauteur = 1 + maximum(obtenir_hauteur(noeud->gauche), obtenir_hauteur(noeud->droit));
+    int equilibre = calculer_equilibre(noeud);
+
+    // Cas de déséquilibre
+    if (equilibre > 1 && strcmp(id, noeud->gauche->identifiant) < 0) return rotation_droite(noeud);
+    if (equilibre < -1 && strcmp(id, noeud->droit->identifiant) > 0) return rotation_gauche(noeud);
+    if (equilibre > 1 && strcmp(id, noeud->gauche->identifiant) > 0) {
+        noeud->gauche = rotation_gauche(noeud->gauche);
+        return rotation_droite(noeud);
     }
-    if (b < -1 && strcmp(cle, node->droite->cle) < 0) {
-        node->droite = rotate_right(node->droite);
-        return rotate_left(node);
+    if (equilibre < -1 && strcmp(id, noeud->droit->identifiant) < 0) {
+        noeud->droit = rotation_droite(noeud->droit);
+        return rotation_gauche(noeud);
     }
-    return node;
+    return noeud;
 }
 
-AVL *avl_creer(void) { return calloc(1, sizeof(AVL)); }
+// Parcours Infixe Inverse pour l'ordre alphabétique décroissant
+void exporter_infixe_inverse(Noeud* racine, FILE* flux_sortie) {
+    if (racine) {
+        // Parcours récursif droit
+        exporter_infixe_inverse(racine->droit, flux_sortie);
 
-void avl_liberer_nodes(NoeudAVL *n, void (*liberer_val)(void*)) {
-    if (!n) return;
-    avl_liberer_nodes(n->gauche, liberer_val);
-    avl_liberer_nodes(n->droite, liberer_val);
-    if (liberer_val && n->val) liberer_val(n->val);
-    free(n->cle);
-    free(n);
-}
+        // Division par 1000 pour passer de k.m3 à M.m3
+        fprintf(flux_sortie, "%s;%.3f;%.3f;%.3f\n", 
+                racine->identifiant, 
+                racine->capacite_max / 1000.0, 
+                racine->volume_capte / 1000.0, 
+                racine->volume_traite / 1000.0);
 
-void avl_liberer(AVL *a, void (*lib_v)(void*)) {
-    if (!a) return;
-    avl_liberer_nodes(a->racine, lib_v);
-    free(a);
-}
-
-void *avl_trouver(AVL *a, const char *cle) {
-    NoeudAVL *curr = a->racine;
-    while (curr) {
-        int cmp = strcmp(cle, curr->cle);
-        if (cmp == 0) return curr->val;
-        curr = (cmp < 0) ? curr->gauche : curr->droite;
+        // Parcours récursif gauche
+        exporter_infixe_inverse(racine->gauche, flux_sortie);
     }
-    return NULL;
 }
 
-void *avl_inserer_si_absent(AVL *a, const char *cle, void *val) {
-    void *ex = NULL;
-    a->racine = insert_node(a->racine, cle, val, &ex);
-    return ex ? ex : val;
-}
-
-static void parcours_rev(NoeudAVL *n, void (*fn)(void*, const char*, void*), void *ctx) {
-    if (!n) return;
-    parcours_rev(n->droite, fn, ctx); // Droite d'abord pour l'ordre inverse
-    fn(n->val, n->cle, ctx);
-    parcours_rev(n->gauche, fn, ctx);
-}
-
-void avl_parcours_desc(AVL *a, void (*fn)(void*, const char*, void*), void *ctx) {
-    if (a) parcours_rev(a->racine, fn, ctx);
-}
-    parcours_rev(a->racine, fn, ctx);
+void liberer_arbre(Noeud* racine) {
+    if (racine) {
+        liberer_arbre(racine->gauche);
+        liberer_arbre(racine->droit);
+        free(racine);
+    }
 }

@@ -1,3 +1,7 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "avl.h"
 
 Noeud* rechercher(Noeud* r, int id) {
     if (r == NULL || r->id == id)

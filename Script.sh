@@ -1,88 +1,106 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
 
-# Définition des codes d'erreur
-ERR_ARGS=1
-ERR_CSV=2
-ERR_COMPIL=3
-ERR_H_MODE=5
-ERR_C_FAIL=7
-ERR_ACTION=8
+# 1. Capture du temps de début (en millisecondes)
+debut=$(date +%s%3N)
 
-USAGE="Usage: $0 <fichier.csv> <histo|leaks> <parametre>"
+# --- FONCTIONS ---
 
-# Démarrer le chronomètre
-START_MS=$(date +%s%3N)
+afficher_usage() {
+    echo "Usage: $0 <fichier_donnees> <mode> <option/ID>"
+    echo "Modes disponibles :"
+    echo "  histo <max|src|real>"
+    echo "  leaks <ID_Usine>"
+    exit 1
+}
 
-# 1. Vérification du nombre d'arguments (Strictement 3)
-if [ "$#" -ne 3 ]; then
-    echo "ERREUR ($ERR_ARGS): Nombre d'arguments incorrect ($# reçu, 3 attendus)." >&2
-    echo "$USAGE" >&2
-    exit $ERR_ARGS
+# --- VÉRIFICATIONS DES ARGUMENTS ---
+
+# Vérification du nombre minimal d'arguments
+if [ "$#" -lt 3 ]; then
+    afficher_usage
 fi
 
-CSV="$1"
-ACTION="$2"
-PARAM="$3"
+FICHIER_CSV=$1
+MODE=$2
+OPTION=$3
 
-# 2. Vérification du fichier CSV
-if [ ! -f "$CSV" ]; then
-    echo "ERREUR ($ERR_CSV): Fichier '$CSV' introuvable." >&2
-    exit $ERR_CSV
+# Vérification de l'existence du fichier de données
+if [ ! -f "$FICHIER_CSV" ]; then
+    echo "Erreur : Le fichier '$FICHIER_CSV' est introuvable."
+    exit 2
 fi
 
-# 3. Compilation automatique
-if [ ! -x build/eau_analyse ]; then
-    echo "Compilation en cours..."
-    if ! make; then
-        echo "ERREUR ($ERR_COMPIL): La compilation a échoué." >&2
-        exit $ERR_COMPIL
+# --- COMPILATION ---
+
+# On vérifie si l'exécutable existe, sinon on appelle make
+if [ ! -f "./water_processor" ]; then
+    echo "Exécutable introuvable. Lancement de la compilation via make..."
+    make
+    if [ $? -ne 0 ]; then
+        echo "Erreur fatale : La compilation a échoué."
+        exit 3
     fi
 fi
 
-EXECUTABLE="./build/eau_analyse"
+# --- EXÉCUTION DU PROGRAMME C ---
 
-case "$ACTION" in
-    histo)
-        if [[ "$PARAM" != "max" && "$PARAM" != "src" && "$PARAM" != "real" ]]; then
-            echo "ERREUR ($ERR_H_MODE): Mode histo inconnu '$PARAM'. (max|src|real)" >&2
-            exit $ERR_H_MODE
-        fi
+echo "Traitement en cours... (veuillez patienter)"
 
-        echo "Traitement Histogramme en cours..."
-        $EXECUTABLE histo "$CSV" "$PARAM"
+# On lance le programme C avec les arguments fournis
+./water_processor "$FICHIER_CSV" "$MODE" "$OPTION"
+CODE_RETOUR=$?
+
+if [ $CODE_RETOUR -ne 0 ]; then
+    echo "Le programme C a rencontré une erreur (Code: $CODE_RETOUR)."
+    # On continue quand même pour afficher le temps final
+else
+    echo "Traitement C terminé avec succès."
+fi
+
+# --- GÉNÉRATION DES GRAPHIQUES ---
+
+if [ "$MODE" == "histo" ] && [ $CODE_RETOUR -eq 0 ]; then
+    FICHIER_DAT="resultat_${OPTION}.dat"
+    
+    # On définit la colonne à trier selon l'option choisie
+    # 2=max, 3=src, 4=real
+    COL=2
+    [ "$OPTION" == "src" ] && COL=3
+    [ "$OPTION" == "real" ] && COL=4
+
+    gnuplot << EOF
+        set datafile separator ";"
+        set terminal png size 1000,700
+        set style data histograms
+        set style fill solid 1.0
+        set xtics rotate by -45 font ",8"
+        set grid y
+        set ylabel "Volume (M.m3)"
         
-        DAT="vol_${PARAM}.dat"
-        if [ -f "$DAT" ]; then
-            # Colonne à tracer : Max=2, Src=3, Real=4
-            COL=2; [ "$PARAM" = "src" ] && COL=3; [ "$PARAM" = "real" ] && COL=4
+        # Graphique des 10 plus grandes
+        set output "${OPTION}_top10.png"
+        set title "Top 10 des plus grandes usines (${OPTION})"
+        plot "< sort -t';' -k${COL} -rn ${FICHIER_DAT} | head -n 10" using ${COL}:xtic(1) title "Volume"
+        
+        # Graphique des 50 plus petites (on filtre les valeurs > 0)
+        set output "${OPTION}_bot50.png"
+        set title "50 plus petites usines (${OPTION})"
+        # awk -F';' '\$${COL} > 0' permet d'ignorer les usines vides ou à 0
+        plot "< sort -t';' -k${COL} -n ${FICHIER_DAT} | tail -n +2 | awk -F';' '\$${COL} > 0' | head -n 50" using ${COL}:xtic(1) title "Volume"
+EOF
+    echo "Graphiques mis à jour générés."
+fi
 
-            # Génération des 10 plus grandes
-            tail -n +2 "$DAT" | sort -t',' -k2,2n | tail -n 10 > tmp_top.dat
-            gnuplot -e "set terminal pngcairo; set output 'vol_${PARAM}_largest.png'; set title '10 plus grandes usines'; set ylabel 'M.m3'; set style fill solid; set xtic rotate by -45; set datafile separator ','; plot 'tmp_top.dat' using $COL:xtic(1) notitle with boxes"
-            
-            # Génération des 50 plus petites
-            tail -n +2 "$DAT" | sort -t',' -k2,2n | head -n 50 > tmp_bot.dat
-            gnuplot -e "set terminal pngcairo; set output 'vol_${PARAM}_smallest.png'; set title '50 plus petites usines'; set ylabel 'M.m3'; set style fill solid; set xtic rotate by -45; set datafile separator ','; plot 'tmp_bot.dat' using $COL:xtic(1) notitle with boxes"
-            
-            rm -f tmp_top.dat tmp_bot.dat
-            echo "Graphiques générés : vol_${PARAM}_largest.png et vol_${PARAM}_smallest.png"
-        fi
-        ;;
+if [ ! -f "./water_processor" ]; then
+    make
+fi
 
-    leaks)
-        echo "Calcul des fuites pour l'usine : $PARAM"
-        # On récupère juste la valeur numérique pour l'affichage
-        RESULT=$($EXECUTABLE leaks "$CSV" "$PARAM")
-        echo "Volume total des fuites (aval) : $RESULT M.m3"
-        ;;
+# --- FIN ET CHRONOMÈTRE ---
 
-    *)
-        echo "ERREUR ($ERR_ACTION): Action '$ACTION' inconnue." >&2
-        exit $ERR_ACTION
-        ;;
-esac
+fin=$(date +%s%3N)
+duree=$((fin - debut))
 
-# Fin du chronomètre
-END_MS=$(date +%s%3N)
-echo "Durée totale : $((END_MS - START_MS)) ms"
+echo "-------------------------------------------"
+echo "Durée totale du script : $duree ms"
+echo "-------------------------------------------"
+

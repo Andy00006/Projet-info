@@ -26,8 +26,7 @@ double sommerPertesAval(Noeud* racine, int id_actuel, double debit_entrant) {
     if (nb_enfants > 0) {
         double debit_par_enfant = debit_sortant / nb_enfants;
         if (n->id_enfant_gauche != -1) {
-            pertes_sous_reseau += sommerPertesAval(racine, n->id_enfant_gauche, debit_par_enfant);
-        }
+            pertes_sous_reseau += sommerPertesAval(racine, n->id_enfant_gauche, debit_par_enfant);}
         if (n->id_enfant_droit != -1) {
             pertes_sous_reseau += sommerPertesAval(racine, n->id_enfant_droit, debit_par_enfant);}}
     return perte_locale + pertes_sous_reseau;}
@@ -38,8 +37,8 @@ int main() {
     if (scanf("%d", &id_usine) != 1) return 1;
     Noeud* usine = rechercher(racine, id_usine);
     if (usine == NULL) {
-        printf("-1\n");
-    } else {
+        printf("-1\n");} 
+    else {
         double volumePerdu = sommerPertesAval(racine, id_usine, usine->capacite);
         printf("Total des pertes en aval : %.2f M.m3\n", volumePerdu);
         FILE *fichier = fopen("historique_pertes.dat", "a");

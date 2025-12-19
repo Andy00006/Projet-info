@@ -1,10 +1,4 @@
-typedef struct Noeud {
-    int id;
-    double capacite;       
-    int id_enfant_gauche;  
-    int id_enfant_droit;  
-    struct Noeud *gauche, *droite;
-} Noeud;
+
 Noeud* rechercher(Noeud* r, int id) {
     if (r == NULL || r->id == id)
     {return r;}

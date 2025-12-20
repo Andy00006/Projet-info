@@ -1,6 +1,6 @@
 #include "avl.h"
 #include <stdlib.h>
-#include <string.h
+#include <string.h>
 
 int obtenir_hauteur(Noeud* n) { return n ? n->hauteur : 0; }
 int calculer_equilibre(Noeud* n) { return n ? obtenir_hauteur(n->gauche) - obtenir_hauteur(n->droit) : 0; }

@@ -44,7 +44,6 @@ Noeud* inserer(Noeud* noeud, char* id, double capa, double capt, double trait) {
     else if (comparaison > 0) 
         noeud->droit = inserer(noeud->droit, id, capa, capt, trait);
     else {
-        // L'usine existe déjà, on cumule les valeurs
         noeud->capacite_max += capa;
         noeud->volume_capte += capt;
         noeud->volume_traite += trait;

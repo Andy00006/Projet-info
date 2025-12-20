@@ -1,13 +1,11 @@
 #include "avl.h"
 #include <stdlib.h>
-#include <string.h>
+#include <string.h
 
-// Fonctions utilitaires pour l'équilibre
 int obtenir_hauteur(Noeud* n) { return n ? n->hauteur : 0; }
 int calculer_equilibre(Noeud* n) { return n ? obtenir_hauteur(n->gauche) - obtenir_hauteur(n->droit) : 0; }
 int maximum(int a, int b) { return (a > b) ? a : b; }
 
-// Création d'un nouveau nœud usine
 Noeud* creer_noeud(char* id, double capa, double capt, double trait) {
     Noeud* n = malloc(sizeof(Noeud));
     if (!n) exit(1); // Erreur d'allocation
@@ -19,8 +17,6 @@ Noeud* creer_noeud(char* id, double capa, double capt, double trait) {
     n->gauche = n->droit = NULL;
     return n;
 }
-
-// Rotation vers la droite
 Noeud* rotation_droite(Noeud* y) {
     Noeud* x = y->gauche;
     Noeud* T2 = x->droit;
@@ -30,8 +26,6 @@ Noeud* rotation_droite(Noeud* y) {
     x->hauteur = maximum(obtenir_hauteur(x->gauche), obtenir_hauteur(x->droit)) + 1;
     return x;
 }
-
-// Rotation vers la gauche
 Noeud* rotation_gauche(Noeud* x) {
     Noeud* y = x->droit;
     Noeud* T2 = y->gauche;
@@ -41,8 +35,6 @@ Noeud* rotation_gauche(Noeud* x) {
     y->hauteur = maximum(obtenir_hauteur(y->gauche), obtenir_hauteur(y->droit)) + 1;
     return y;
 }
-
-// Insertion avec équilibrage AVL
 Noeud* inserer(Noeud* noeud, char* id, double capa, double capt, double trait) {
     if (!noeud) return creer_noeud(id, capa, capt, trait);
 
@@ -58,12 +50,8 @@ Noeud* inserer(Noeud* noeud, char* id, double capa, double capt, double trait) {
         noeud->volume_traite += trait;
         return noeud;
     }
-
-    // Mise à jour de la hauteur et équilibrage
     noeud->hauteur = 1 + maximum(obtenir_hauteur(noeud->gauche), obtenir_hauteur(noeud->droit));
     int equilibre = calculer_equilibre(noeud);
-
-    // Cas de déséquilibre
     if (equilibre > 1 && strcmp(id, noeud->gauche->identifiant) < 0) return rotation_droite(noeud);
     if (equilibre < -1 && strcmp(id, noeud->droit->identifiant) > 0) return rotation_gauche(noeud);
     if (equilibre > 1 && strcmp(id, noeud->gauche->identifiant) > 0) {
@@ -76,8 +64,6 @@ Noeud* inserer(Noeud* noeud, char* id, double capa, double capt, double trait) {
     }
     return noeud;
 }
-
-// Parcours Infixe Inverse pour l'ordre alphabétique décroissant
 void exporter_infixe_inverse(Noeud* racine, FILE* flux_sortie) {
     if (racine) {
         exporter_infixe_inverse(racine->droit, flux_sortie);

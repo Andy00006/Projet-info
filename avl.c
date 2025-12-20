@@ -8,7 +8,7 @@ int maximum(int a, int b) { return (a > b) ? a : b; }
 
 Noeud* creer_noeud(char* id, double capa, double capt, double trait) {
     Noeud* n = malloc(sizeof(Noeud));
-    if (!n) exit(1); // Erreur d'allocation
+    if (!n) exit(1); 
     strncpy(n->identifiant, id, 99);
     n->capacite_max = capa;
     n->volume_capte = capt;

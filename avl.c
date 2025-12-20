@@ -80,17 +80,9 @@ Noeud* inserer(Noeud* noeud, char* id, double capa, double capt, double trait) {
 // Parcours Infixe Inverse pour l'ordre alphabétique décroissant
 void exporter_infixe_inverse(Noeud* racine, FILE* flux_sortie) {
     if (racine) {
-        // Parcours récursif droit
         exporter_infixe_inverse(racine->droit, flux_sortie);
-
-        // Division par 1000 pour passer de k.m3 à M.m3
         fprintf(flux_sortie, "%s;%.3f;%.3f;%.3f\n", 
-                racine->identifiant, 
-                racine->capacite_max / 1000.0, 
-                racine->volume_capte / 1000.0, 
-                racine->volume_traite / 1000.0);
-
-        // Parcours récursif gauche
+                racine->identifiant, racine->capacite_max, racine->volume_capte, racine->volume_traite);
         exporter_infixe_inverse(racine->gauche, flux_sortie);
     }
 }

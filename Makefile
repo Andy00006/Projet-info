@@ -2,24 +2,23 @@
 CC = gcc
 
 # Options de compilation :
-# -Wall -Wextra : affiche tous les avertissements pour un code propre
-# -O3 : optimisation maximale pour la vitesse de traitement
+# -O3 est crucial ici pour la rapidité sur les gros fichiers CSV
 CFLAGS = -Wall -Wextra -O3
 
 # Nom de l'exécutable final
 EXEC = water_processor
 
-# Liste des fichiers objets (les fichiers .c compilés en .o)
-OBJ = main.o avl.o
+# AJOUT de leaks.o ici pour que le compilateur l'intègre
+OBJ = main.o avl.o leaks.o
 
-# Règle principale (appelée par défaut via la commande 'make')
+# Règle principale
 all: $(EXEC)
 
-# Création de l'exécutable à partir des objets
+# Création de l'exécutable
 $(EXEC): $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) -o $(EXEC)
 
-# Compilation du fichier main.c
+# Compilation du fichier main.c (dépend de avl.h)
 main.o: main.c avl.h
 	$(CC) $(CFLAGS) -c main.c
 
@@ -27,10 +26,13 @@ main.o: main.c avl.h
 avl.o: avl.c avl.h
 	$(CC) $(CFLAGS) -c avl.c
 
-# Règle pour nettoyer les fichiers temporaires
+# AJOUT de la compilation pour leaks.c
+leaks.o: leaks.c avl.h
+	$(CC) $(CFLAGS) -c leaks.c
+
+# Nettoyage
 clean:
 	rm -f *.o $(EXEC)
 
-# Règle pour tout recompiler
+# Tout recompiler
 rebuild: clean all
-

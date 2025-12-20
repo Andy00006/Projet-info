@@ -5,6 +5,8 @@ Pour la bibliothèque, il faut qu'elle comporte:
 <stdlib.h>
 <string.h>
 
+Il faut également installer gnuplot qui permettra l'affichage des histogrammes sur un logiciel qui permet d'afficher des image en .png .
+Ainsi qu'un document .csv avec les informations dessus.
 
 Pour compiler le programme,ecrire dans le terminal: make 
 

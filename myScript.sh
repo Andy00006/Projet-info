@@ -48,7 +48,6 @@ fi
 if [ "$MODE" == "histo" ] && [ $CODE_RETOUR -eq 0 ]; then
     FICHIER_DAT="resultat_${OPTION}.dat"
     
-    # Détermination de la colonne
     COL=2
     [ "$OPTION" == "src" ] && COL=3
     [ "$OPTION" == "real" ] && COL=4

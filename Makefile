@@ -1,20 +1,19 @@
 # Définition du compilateur
 CC = gcc
 
-# Options de compilation :
-# -O3 est crucial ici pour la rapidité sur les gros fichiers CSV
+# Options de compilation
 CFLAGS = -Wall -Wextra -O3
 
 # Nom de l'exécutable final
 EXEC = water_processor
 
-# AJOUT de leaks.o ici pour que le compilateur l'intègre
+# Liste des fichiers objets (AJOUT de leaks.o ici)
 OBJ = main.o avl.o leaks.o
 
 # Règle principale
 all: $(EXEC)
 
-# Création de l'exécutable
+# Création de l'exécutable à partir des objets
 $(EXEC): $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) -o $(EXEC)
 
@@ -22,17 +21,17 @@ $(EXEC): $(OBJ)
 main.o: main.c avl.h
 	$(CC) $(CFLAGS) -c main.c
 
-# Compilation du fichier avl.c
+# Compilation du fichier avl.c (dépend de avl.h)
 avl.o: avl.c avl.h
 	$(CC) $(CFLAGS) -c avl.c
 
-# AJOUT de la compilation pour leaks.c
+# Compilation du fichier leaks.c (dépend de avl.h)
 leaks.o: leaks.c avl.h
 	$(CC) $(CFLAGS) -c leaks.c
 
-# Nettoyage
+# Règle pour nettoyer les fichiers temporaires et les graphiques
 clean:
-	rm -f *.o $(EXEC)
+	rm -f *.o $(EXEC) resultat_*.dat top10.tmp bot50.tmp
 
-# Tout recompiler
+# Règle pour tout recompiler
 rebuild: clean all

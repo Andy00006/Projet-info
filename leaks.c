@@ -28,7 +28,7 @@ void executer_mode_leaks(Noeud* racine, char* target_id) {
 
     if (usine == NULL) {
         fprintf(f_hist, "%s;-1.000\n", target_id);
-        printf("-1\n"); // Format attendu si non trouvé
+        printf("-1\n"); 
     } else {
         double total_pertes = calculer_pertes_recursif(racine, target_id);
         fprintf(f_hist, "%s;%.3f\n", target_id, total_pertes);

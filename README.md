@@ -1,4 +1,10 @@
-# Projet-info
+# PROJET
+
+Pour la bibliothèque, il faut qu'elle comporte:
+<stdio.h>
+<stdlib.h>
+<string.h>
+
 
 Pour compiler le programme,ecrire dans le terminal: make 
 
@@ -21,4 +27,3 @@ Les noms des fichiers créer pour les histogrammes et le fichier leaks sont:
 -rendement_historique pour le fichier qui mesure les pertes des usines sur l’ensemble de son réseau aval
 
 si un message d'erreur apparait, il faut réecrire la commande sans erreur pour continuer ou ecrire le message pour supprimer les fichier.
-

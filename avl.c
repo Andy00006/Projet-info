@@ -19,7 +19,8 @@ int calculer_equilibre(Noeud* n) {
 int maximum(int a, int b) {
     if (a > b) {
         return a;
-    } else {
+    } 
+    else {
         return b;
     }
 }

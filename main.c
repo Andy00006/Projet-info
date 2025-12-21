@@ -24,7 +24,6 @@ int main(int argc, char* argv[]) {
     while (fgets(ligne, sizeof(ligne), fichier)) {
         if (ligne[0] == '\n' || ligne[0] == '\r') continue;
 
-        char *c1 = strtok(ligne, ";"); 
         char *c2 = strtok(NULL, ";"); 
         char *c3 = strtok(NULL, ";"); 
         char *c4 = strtok(NULL, ";"); 

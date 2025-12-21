@@ -62,6 +62,7 @@ if [ "$MODE" == "histo" ] && [ $CODE_RETOUR -eq 0 ]; then
     sort -t';' -k${COL} -rn "$FICHIER_DAT" | head -n 10 > top10.tmp
     sort -t';' -k${COL} -n "$FICHIER_DAT" | awk -F';' -v c="$COL" '$c > 0' | head -n 50 > bot50.tmp
 
+    #Génération visuelle via Gnuplot
     gnuplot << EOF
         set datafile separator ";"
         set terminal png size 1000,700
@@ -84,6 +85,7 @@ EOF
     echo "Graphiques générés : ${OPTION}_top10.png et ${OPTION}_bot50.png"
 fi
 
+#Calcul de la durée totale
 fin=$(date +%s%3N)
 duree=$((fin - debut))
 

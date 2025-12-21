@@ -5,6 +5,7 @@
 
 int main(int argc, char* argv[]) {
     
+    //vérification de l'existence pour excecuter le programme
     if (argc < 4) {
         fprintf(stderr, "Erreur : Arguments manquants.\n");
         return 1;
@@ -15,12 +16,12 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "Erreur : Impossible d'ouvrir le fichier %s\n", argv[1]);
         return 2;
     }
-
     char* mode = argv[2];
     char* option_id = argv[3];
     Noeud* racine = NULL;
     char ligne[1024];
 
+    //Boucle de lecture du fichier ligne par ligne
     while (fgets(ligne, sizeof(ligne), fichier)) {
         if (ligne[0] == '\n' || ligne[0] == '\r') continue;
         
@@ -30,6 +31,7 @@ int main(int argc, char* argv[]) {
         char *c4 = strtok(NULL, ";"); 
         char *c5 = strtok(NULL, ";\n"); 
 
+        //fonction interne pour convertir proprement les chaînes en nombres
         double extraire_double(char* str) {
             if (str != NULL && str[0] != '-' && str[0] != '\0') {
                 return atof(str);
@@ -40,6 +42,7 @@ int main(int argc, char* argv[]) {
         double val4 = extraire_double(c4);
         double val5 = extraire_double(c5);
 
+        //lecture + insertion des valeurs en fonction de leur genre
         if (strcmp(mode, "histo") == 0) {
             if (c2 && strstr(c2, "Facility") && (!c3 || c3[0] == '-')) {
                 racine = inserer(racine, c2, val4, 0, 0);
@@ -49,6 +52,7 @@ int main(int argc, char* argv[]) {
                 racine = inserer(racine, c3, val4, val4, volume_traite);
             }
         } 
+        //Analyse des fuites par usine
         else if (strcmp(mode, "leaks") == 0) {
             if (c3 && strcmp(c3, "-") != 0) {
                 double volume_traite = val4 * (1.0 - (val5 / 100.0));
@@ -58,6 +62,7 @@ int main(int argc, char* argv[]) {
     }
     fclose(fichier);
 
+    //sortie des résultats dans un histogramme
     if (strcmp(mode, "histo") == 0) {
         char nom_sortie[128];
         sprintf(nom_sortie, "resultat_%s.dat", option_id);
@@ -68,6 +73,7 @@ int main(int argc, char* argv[]) {
             fclose(flux_out);
         }
     } 
+    // Appel de la fonction spécifique pour chercher l'ID demandé dans l'AVL
     else if (strcmp(mode, "leaks") == 0) {
         executer_mode_leaks(racine, option_id);
     }

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Retourne la hauteur du noeud
 int obtenir_hauteur(Noeud* n) {
     if (n == NULL) {
         return 0;
@@ -9,6 +10,7 @@ int obtenir_hauteur(Noeud* n) {
     return n->hauteur;
 }
 
+// Calcule la différence de hauteur entre la gauche et la droite
 int calculer_equilibre(Noeud* n) {
     if (n == NULL) {
         return 0;
@@ -16,6 +18,7 @@ int calculer_equilibre(Noeud* n) {
     return obtenir_hauteur(n->gauche) - obtenir_hauteur(n->droit);
 }
 
+// Simple fonction pour obtenir la valeur maximale entre deux entiers
 int maximum(int a, int b) {
     if (a > b) {
         return a;
@@ -25,6 +28,7 @@ int maximum(int a, int b) {
     }
 }
 
+// Alloue et initialise un nouveau noeud avec les données de l'usine
 Noeud* creer_noeud(char* id, double capa, double capt, double trait) {
     Noeud* n = malloc(sizeof(Noeud));
     if (!n) exit(1); 
@@ -37,6 +41,7 @@ Noeud* creer_noeud(char* id, double capa, double capt, double trait) {
     return n;
 }
 
+// Bascule le noeud vers la droite pour réduire la hauteur à gauche
 Noeud* rotation_droite(Noeud* y) {
     Noeud* x = y->gauche;
     Noeud* T2 = x->droit;
@@ -47,6 +52,7 @@ Noeud* rotation_droite(Noeud* y) {
     return x;
 }
 
+// Bascule le noeud vers la gauche pour réduire la hauteur à droite
 Noeud* rotation_gauche(Noeud* x) {
     Noeud* y = x->droit;
     Noeud* T2 = y->gauche;
@@ -57,6 +63,7 @@ Noeud* rotation_gauche(Noeud* x) {
     return y;
 }
 
+// Insère une donnée ou met à jour si l'ID existe déjà
 Noeud* inserer(Noeud* noeud, char* id, double capa, double capt, double trait) {
     if (noeud == NULL) {
         return creer_noeud(id, capa, capt, trait);
@@ -101,6 +108,7 @@ Noeud* inserer(Noeud* noeud, char* id, double capa, double capt, double trait) {
     return noeud;
 }
 
+// Parcourt l'arbre et écrit les données dans le fichier
 void exporter_infixe_inverse(Noeud* racine, FILE* flux_sortie) {
     if (racine) {
         exporter_infixe_inverse(racine->droit, flux_sortie);
@@ -109,6 +117,7 @@ void exporter_infixe_inverse(Noeud* racine, FILE* flux_sortie) {
     }
 }
 
+// Libère chaque noeud dans la mémoire
 void liberer_arbre(Noeud* racine) {
     if (racine) {
         liberer_arbre(racine->gauche);

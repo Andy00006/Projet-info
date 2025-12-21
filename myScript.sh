@@ -44,6 +44,7 @@ echo "Traitement en cours... (veuillez patienter)"
 ./water_processor "$FICHIER_CSV" "$MODE" "$OPTION"
 CODE_RETOUR=$?
 
+#Génération des graphiques
 if [ $CODE_RETOUR -ne 0 ]; then
     echo "Le programme C a rencontré une erreur (Code: $CODE_RETOUR)."
 else

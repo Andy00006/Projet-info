@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#Initialisation du chronomètre
 debut=$(date +%s%3N)
 
 afficher_usage() {
@@ -10,6 +11,7 @@ afficher_usage() {
     exit 1
 }
 
+#Vérification des arguments et des fichiers
 if [ "$#" -lt 3 ]; then
     afficher_usage
 fi
@@ -31,6 +33,7 @@ if [ ! -f "$FICHIER_CSV" ]; then
     exit 2
 fi
 
+#Compilation et exécution du programme C
 if [ ! -f "./water_processor" ]; then
     echo "Exécutable introuvable. Compilation..."
     make

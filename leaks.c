@@ -3,6 +3,7 @@
 #include <string.h>
 #include "avl.h"
 
+//Recherche un nœud spécifique dans l'AVL à partir de l'identifiant de l'usine.
 Noeud* rechercher_usine(Noeud* r, char* id) {
     if (r == NULL) {
         return NULL;

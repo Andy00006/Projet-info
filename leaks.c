@@ -30,7 +30,7 @@ double calculer_pertes(Noeud* racine, char* id_actuel) {
     return perte;
 }
 
-//enregistre les pertes d'une usine cible dans un fichier
+//Enregistre les pertes d'une usine cible dans un fichier
 void executer_mode_leaks(Noeud* racine, char* target_id) {
     FILE* f_hist = fopen("rendement_historique.dat", "a");
     if (f_hist == NULL) {

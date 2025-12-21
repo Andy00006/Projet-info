@@ -3,7 +3,7 @@
 #include <string.h>
 #include "avl.h"
 
-//Recherche un nœud spécifique dans l'AVL à partir de l'identifiant de l'usine.
+//Recherche un nœud spécifique dans l'AVL à partir de l'identifiant de l'usine
 Noeud* rechercher_usine(Noeud* r, char* id) {
     if (r == NULL) {
         return NULL;
@@ -20,6 +20,7 @@ Noeud* rechercher_usine(Noeud* r, char* id) {
     }
 }
 
+//Calcule la différence entre le volume capté et le volume traité pour une usine
 double calculer_pertes(Noeud* racine, char* id_actuel) {
     Noeud* n = rechercher_usine(racine, id_actuel);
     if (n == NULL) {
@@ -29,6 +30,7 @@ double calculer_pertes(Noeud* racine, char* id_actuel) {
     return perte;
 }
 
+//enregistre les pertes d'une usine cible dans un fichier
 void executer_mode_leaks(Noeud* racine, char* target_id) {
     FILE* f_hist = fopen("rendement_historique.dat", "a");
     if (f_hist == NULL) {

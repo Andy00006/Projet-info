@@ -1,3 +1,5 @@
+#!/bin/bash
+
 debut=$(date +%s%3N)
 
 afficher_usage() {
